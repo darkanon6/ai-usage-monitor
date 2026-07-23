@@ -7,6 +7,18 @@ function barColor(pct) {
   return "#2f9e44";
 }
 
+// label/error come from POST /snapshots, which has no auth (LAN-only by
+// design) — anyone reaching this backend could set them to anything, so
+// they're escaped before going into innerHTML rather than trusted as-is.
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 async function loadLatest() {
   const limitsEl = document.getElementById("limits");
   const statusEl = document.getElementById("status");
@@ -21,7 +33,7 @@ async function loadLatest() {
   }
 
   if (!snapshot.ok) {
-    limitsEl.innerHTML = `<em style="font-size:13px;color:#e03131;">${snapshot.error ?? "Read failed"}</em>`;
+    limitsEl.innerHTML = `<em style="font-size:13px;color:#e03131;">${escapeHtml(snapshot.error ?? "Read failed")}</em>`;
     statusEl.textContent = "";
     return;
   }
@@ -30,7 +42,7 @@ async function loadLatest() {
     .map(
       (l) => `
       <div class="limit-row">
-        <div class="limit-label"><span>${l.label}</span><span>${Math.round(l.usedPct)}%</span></div>
+        <div class="limit-label"><span>${escapeHtml(l.label)}</span><span>${Math.round(l.usedPct)}%</span></div>
         <div class="bar-track">
           <div class="bar-fill" style="width:${l.usedPct}%;background:${barColor(l.usedPct)}"></div>
         </div>
@@ -38,7 +50,7 @@ async function loadLatest() {
     )
     .join("");
 
-  statusEl.textContent = `Updated ${new Date(snapshot.fetchedAt).toLocaleString()}`;
+  statusEl.textContent = `Last checked ${new Date(snapshot.fetchedAt).toLocaleString()}`;
 }
 
 async function loadHistory() {

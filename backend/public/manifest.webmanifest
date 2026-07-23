@@ -1,6 +1,6 @@
 {
-  "name": "AI Usage Monitor",
-  "short_name": "Usage Monitor",
+  "name": "Usage Monitor",
+  "short_name": "Usage Mon.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#141516",

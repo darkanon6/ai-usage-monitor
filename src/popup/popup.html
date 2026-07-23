@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Claude Usage Monitor</title>
+  <title>Usage Monitor</title>
   <style>
     body {
       width: 260px;
@@ -39,12 +39,19 @@
       color: #999;
       margin-top: 10px;
     }
+    #check-now {
+      margin-top: 8px;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <h1>Claude Usage</h1>
+  <h1>Usage Monitor</h1>
   <div id="limits"><em style="font-size:12px;color:#999;">Loading…</em></div>
   <div id="status"></div>
+  <button id="check-now" type="button">Check Now</button>
   <script src="popup.js" type="module"></script>
 </body>
 </html>

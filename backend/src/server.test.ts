@@ -55,6 +55,53 @@ test("POST /snapshots accepts a valid snapshot and rejects a malformed body", as
   });
 });
 
+test("POST /snapshots rejects a snapshot with a malformed limit entry", async () => {
+  await withServer(async (base) => {
+    const res = await fetch(`${base}/snapshots`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        provider: "claude",
+        fetchedAt: new Date().toISOString(),
+        ok: true,
+        limits: [{ type: "session", label: "5-hour session", usedPct: "not a number", resetsAt: null }],
+      }),
+    });
+    assert.equal(res.status, 400);
+  });
+});
+
+test("POST /snapshots rejects a request without a JSON Content-Type, even with a valid-looking body", async () => {
+  await withServer(async (base) => {
+    const res = await fetch(`${base}/snapshots`, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(makeSnapshot(50)),
+    });
+    assert.equal(res.status, 415);
+  });
+});
+
+test("POST /snapshots rejects an oversized body", async () => {
+  await withServer(async (base) => {
+    const oversized = makeSnapshot(50);
+    oversized.limits[0].label = "x".repeat(100_000);
+    const res = await fetch(`${base}/snapshots`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(oversized),
+    });
+    assert.equal(res.status, 413);
+  });
+});
+
+test("GET path traversal outside publicDir is rejected", async () => {
+  await withServer(async (base) => {
+    const res = await fetch(`${base}/../../../../etc/passwd`);
+    assert.notEqual(res.status, 200);
+  });
+});
+
 test("GET /snapshots/latest?provider= returns the most recent snapshot, or null with no data", async () => {
   await withServer(async (base) => {
     const empty = await fetch(`${base}/snapshots/latest?provider=claude`);

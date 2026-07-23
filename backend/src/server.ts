@@ -3,7 +3,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { openStore, rowToSnapshot, type SnapshotStore } from "./db.js";
-import type { UsageSnapshot } from "./types.js";
+import type { UsageSnapshot, UsageLimit } from "./types.js";
+
+const MAX_BODY_BYTES = 64 * 1024; // a real snapshot is a few hundred bytes; this is generous headroom
 
 const MIME_TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -21,28 +23,70 @@ function sendJson(res: http.ServerResponse, status: number, body: unknown): void
   res.end(payload);
 }
 
+class BodyTooLargeError extends Error {}
+
 async function readBody(req: http.IncomingMessage): Promise<string> {
   const chunks: Buffer[] = [];
-  for await (const chunk of req) chunks.push(chunk as Buffer);
+  let total = 0;
+  for await (const chunk of req) {
+    total += (chunk as Buffer).length;
+    if (total > MAX_BODY_BYTES) {
+      throw new BodyTooLargeError("request body too large");
+    }
+    chunks.push(chunk as Buffer);
+  }
   return Buffer.concat(chunks).toString("utf8");
 }
 
+const VALID_PROVIDERS = new Set(["claude", "chatgpt", "gemini"]);
+const VALID_LIMIT_TYPES = new Set(["session", "weekly", "daily", "per_model"]);
+const MAX_STRING_FIELD_LENGTH = 500; // generous for a label/error message, not for injected payloads
+
+function isUsageLimit(value: unknown): value is UsageLimit {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.type === "string" &&
+    VALID_LIMIT_TYPES.has(v.type) &&
+    typeof v.label === "string" &&
+    v.label.length <= MAX_STRING_FIELD_LENGTH &&
+    typeof v.usedPct === "number" &&
+    Number.isFinite(v.usedPct) &&
+    (v.resetsAt === null || typeof v.resetsAt === "string") &&
+    (v.model === undefined || typeof v.model === "string")
+  );
+}
+
+// Deliberately strict, not just a shape check: this is the only gate on data
+// that gets stored and later rendered by the dashboard, and POST /snapshots
+// has no auth (LAN-only by design, see CLAUDE.md) — rejecting anything with
+// the wrong field types here is cheap insurance, though it's the rendering
+// side (app.js/popup.ts escaping untrusted strings) that actually closes the
+// XSS risk, since a well-formed *string* can still contain markup.
 function isUsageSnapshot(value: unknown): value is UsageSnapshot {
   if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
   return (
     typeof v.provider === "string" &&
+    VALID_PROVIDERS.has(v.provider) &&
     typeof v.fetchedAt === "string" &&
     typeof v.ok === "boolean" &&
-    Array.isArray(v.limits)
+    Array.isArray(v.limits) &&
+    v.limits.length <= 50 &&
+    v.limits.every(isUsageLimit) &&
+    (v.error === undefined || (typeof v.error === "string" && v.error.length <= MAX_STRING_FIELD_LENGTH))
   );
 }
 
 function serveStatic(res: http.ServerResponse, publicDir: string, pathname: string): boolean {
   const relative = pathname === "/" ? "/index.html" : pathname;
   const filePath = path.normalize(path.join(publicDir, relative));
+  const publicDirWithSep = publicDir.endsWith(path.sep) ? publicDir : publicDir + path.sep;
 
-  if (!filePath.startsWith(publicDir)) {
+  // filePath.startsWith(publicDir) alone would also match a sibling
+  // directory that happens to share the prefix (e.g. publicDir + "-evil"),
+  // so the comparison needs the trailing separator.
+  if (filePath !== publicDir && !filePath.startsWith(publicDirWithSep)) {
     res.writeHead(403);
     res.end();
     return true;
@@ -66,6 +110,19 @@ export function createServer(store: SnapshotStore, publicDir: string): http.Serv
 
       try {
         if (req.method === "POST" && url.pathname === "/snapshots") {
+          // Requiring the real content type means a cross-site fetch() has to
+          // use one that triggers a CORS preflight — which this server never
+          // answers with an Access-Control-Allow-Origin header, so browsers
+          // block it. Without this check, a "simple request" (e.g.
+          // Content-Type: text/plain) skips preflight and would be sent —
+          // and processed here regardless of what it claimed to be — letting
+          // any page a browser on this network visits blind-POST snapshots.
+          const contentType = req.headers["content-type"] ?? "";
+          if (!contentType.toLowerCase().includes("application/json")) {
+            sendJson(res, 415, { error: "Content-Type must be application/json" });
+            return;
+          }
+
           const body = await readBody(req);
           const parsed: unknown = JSON.parse(body);
           if (!isUsageSnapshot(parsed)) {
@@ -102,7 +159,19 @@ export function createServer(store: SnapshotStore, publicDir: string): http.Serv
 
         sendJson(res, 404, { error: "not found" });
       } catch (err) {
-        sendJson(res, 500, { error: err instanceof Error ? err.message : String(err) });
+        if (err instanceof BodyTooLargeError) {
+          sendJson(res, 413, { error: err.message });
+          return;
+        }
+        if (err instanceof SyntaxError) {
+          sendJson(res, 400, { error: "body is not valid JSON" });
+          return;
+        }
+        // Log the real error server-side, but don't hand internal details
+        // (stack traces, file paths) back to the client for anything
+        // unexpected.
+        console.error("Unhandled request error:", err);
+        sendJson(res, 500, { error: "internal server error" });
       }
     })();
   });

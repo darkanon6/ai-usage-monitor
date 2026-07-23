@@ -1,8 +1,8 @@
 {
-  "name": "ai-usage-monitor",
+  "name": "usage-monitor",
   "version": "0.1.0",
   "private": true,
-  "description": "Browser extension that tracks your usage limits across Claude, ChatGPT, and Gemini.",
+  "description": "Browser extension that checks your Claude.ai usage percentage on demand, with optional Discord/Telegram/Slack alerts.",
   "type": "module",
   "scripts": {
     "build": "tsc && npm run copy-assets",

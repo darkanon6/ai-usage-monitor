@@ -1,5 +1,6 @@
 import { getSettings, saveSettings } from "../lib/settings.js";
 import { sendTestAlert } from "../lib/alerts.js";
+import { syncBackgroundPollingAlarm } from "../lib/background-alarm.js";
 import {
   isValidDiscordWebhook,
   isValidSlackWebhook,
@@ -82,6 +83,8 @@ async function load(): Promise<void> {
     settings.slackWebhookUrl ?? "";
   (document.getElementById("backend-url") as HTMLInputElement).value =
     settings.backendUrl ?? "";
+  (document.getElementById("background-polling") as HTMLInputElement).checked =
+    settings.backgroundPollingEnabled;
 }
 
 function setError(fieldId: string, message: string | null): void {
@@ -98,6 +101,7 @@ async function save(): Promise<void> {
   const telegramChatIdRaw = (document.getElementById("telegram-chatid") as HTMLInputElement).value.trim();
   const slackWebhookRaw = (document.getElementById("slack-webhook") as HTMLInputElement).value.trim();
   const backendUrlRaw = (document.getElementById("backend-url") as HTMLInputElement).value.trim();
+  const backgroundPollingEnabled = (document.getElementById("background-polling") as HTMLInputElement).checked;
 
   // Each field is optional (blank disables that channel), but if filled in,
   // it must actually look like the thing it claims to be — otherwise a typo
@@ -169,7 +173,12 @@ async function save(): Promise<void> {
     slackWebhookUrl: slackWebhookRaw.length > 0 ? slackWebhookRaw : null,
     alertThresholds: normalizeThresholds(thresholdRaws.map(Number)),
     backendUrl: backendUrlRaw.length > 0 ? backendUrlRaw : null,
+    backgroundPollingEnabled,
   });
+
+  // Applied immediately rather than waiting for the service worker's next
+  // onInstalled/onStartup sync, so toggling this actually takes effect now.
+  await syncBackgroundPollingAlarm(backgroundPollingEnabled);
 
   const savedEl = document.getElementById("saved")!;
   savedEl.style.display = "inline";

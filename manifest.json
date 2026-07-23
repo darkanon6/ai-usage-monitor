@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Claude Usage Monitor",
+  "name": "Usage Monitor",
   "version": "0.2.0",
-  "description": "Tracks your Claude.ai session and weekly usage limits, with Discord alerts.",
-  "permissions": ["storage", "alarms", "cookies", "notifications"],
+  "description": "Check your Claude.ai session and weekly usage percentage on demand, with optional Discord/Telegram/Slack alerts.",
+  "permissions": ["storage", "alarms", "cookies"],
   "host_permissions": ["https://claude.ai/*", "https://discord.com/*", "https://api.telegram.org/*", "https://hooks.slack.com/*"],
   "optional_host_permissions": ["http://*/*", "https://*/*"],
   "icons": {
@@ -17,7 +17,7 @@
   },
   "action": {
     "default_popup": "dist/popup/popup.html",
-    "default_title": "AI Usage Monitor",
+    "default_title": "Usage Monitor",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",

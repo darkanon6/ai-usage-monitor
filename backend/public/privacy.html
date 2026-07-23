@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy Policy — Usage Monitor</title>
+  <link rel="icon" href="icons/icon192.png" />
+  <meta name="theme-color" content="#141516" />
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 20px 16px 48px;
+      background: #fff;
+      color: #222;
+      line-height: 1.6;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background: #141516; color: #eee; }
+      a { color: #7fc8ff; }
+      .updated { color: #999 !important; }
+    }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    .updated { font-size: 12px; color: #888; margin: 0 0 20px; }
+    h2 { font-size: 15px; margin: 28px 0 8px; }
+    p, li { font-size: 14px; }
+    ul, ol { padding-left: 20px; }
+    .disclaimer {
+      font-size: 13px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: rgba(128, 128, 128, 0.12);
+      margin: 16px 0;
+    }
+    a { color: #0b6fb8; }
+    footer { margin-top: 36px; font-size: 12px; color: #999; }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy — Usage Monitor</h1>
+  <p class="updated">Last updated: July 22, 2026</p>
+
+  <p class="disclaimer">
+    <strong>Usage Monitor is not affiliated with, endorsed by, or sponsored
+    by Anthropic.</strong> It is an independent, unofficial tool that reads
+    usage information from your own Claude.ai account, using your own
+    browser session.
+  </p>
+
+  <h2>What this extension reads</h2>
+  <p>
+    Usage Monitor reads two things from Claude.ai, only when you open the
+    extension's popup or click "Check Now" (or, if you've separately enabled
+    the optional Advanced background-checking mode in settings, on a
+    periodic timer):
+  </p>
+  <ol>
+    <li>
+      <strong>Your organization ID</strong> — read from the
+      <code>lastActiveOrg</code> cookie already set by claude.ai in your
+      browser. This is an identifier, not a secret — it is not your
+      password or session key.
+    </li>
+    <li>
+      <strong>Your usage percentages</strong> — fetched from Claude.ai's own
+      usage endpoint, using your browser's existing logged-in session (the
+      same way the Claude.ai website itself shows you this information when
+      you visit your account settings).
+    </li>
+  </ol>
+  <p>
+    <strong>Usage Monitor never reads, stores, or transmits your Claude.ai
+    password, session key, or any other authentication credential.</strong>
+    Your browser attaches your existing login automatically when fetching
+    your own usage data; the extension's code never has access to that
+    credential directly.
+  </p>
+
+  <h2>What this extension does NOT read</h2>
+  <p>
+    Usage Monitor does not read your conversations, prompts, or any content
+    you send to or receive from Claude. It reads only the account-level
+    usage percentage data described above.
+  </p>
+
+  <h2>Where your data goes</h2>
+  <p>
+    <strong>Nowhere, by default</strong>, beyond your own browser's local
+    storage — unless you configure one of the following optional features
+    yourself:
+  </p>
+  <ul>
+    <li>
+      <strong>Alert channels (Discord, Telegram, Slack):</strong> if you
+      provide a webhook URL, bot token, or similar credential in settings, a
+      short text message (your current usage percentage and which threshold
+      was crossed) is sent to that channel when you've configured an alert
+      threshold. These credentials and destinations are entirely of your own
+      choosing — Usage Monitor does not have or use any of its own.
+    </li>
+    <li>
+      <strong>Optional self-hosted dashboard:</strong> if you choose to run
+      the optional backend (on your own server/hardware) and enter its
+      address in settings, usage snapshots are sent there so you can view
+      your usage history from other devices. This is your own server; the
+      developers of Usage Monitor have no access to it or the data stored
+      there.
+    </li>
+  </ul>
+  <p>
+    <strong>The developers of Usage Monitor do not receive, store, or have
+    access to any of your usage data, credentials, or alert-channel
+    information.</strong> There is no central server operated by Usage
+    Monitor's developers that your data passes through.
+  </p>
+
+  <h2>Permissions this extension requests, and why</h2>
+  <ul>
+    <li><strong>Storage</strong> — to save your settings and the most recent usage snapshot locally in your browser.</li>
+    <li><strong>Cookies</strong> (for claude.ai only) — to read the <code>lastActiveOrg</code> cookie described above.</li>
+    <li><strong>Alarms</strong> — used only if you enable the optional Advanced background-checking mode; otherwise unused.</li>
+    <li><strong>Host permissions</strong> for claude.ai, discord.com, api.telegram.org, and hooks.slack.com — to fetch your usage data and to send alerts to the channels you configure.</li>
+    <li><strong>Optional host permission</strong> for a self-hosted backend address — granted only for the specific address you enter, only if you choose to use the optional dashboard feature.</li>
+  </ul>
+
+  <h2>Data retention</h2>
+  <p>
+    Usage snapshots and settings are stored locally in your browser via
+    <code>chrome.storage.local</code>, and (only if you've configured it) in
+    your own self-hosted backend. Uninstalling the extension removes its
+    local storage. If you've used the optional backend, data there persists
+    until you delete it yourself, since it lives on your own server.
+  </p>
+
+  <h2>Changes to this policy</h2>
+  <p>
+    If this policy changes, the updated version will be posted here with a
+    revised "last updated" date.
+  </p>
+
+  <h2>Contact</h2>
+  <p>
+    Questions about this policy? Email
+    <a href="mailto:darktanon6@gmail.com">darktanon6@gmail.com</a> or open an
+    issue on <a href="https://github.com/darkanon6/ai-usage-monitor" target="_blank" rel="noopener">GitHub</a>.
+  </p>
+
+  <footer><a href="./">&larr; Back to dashboard</a></footer>
+</body>
+</html>

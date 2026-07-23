@@ -3,21 +3,28 @@ import { saveSnapshot } from "../lib/storage.js";
 import { getSettings } from "../lib/settings.js";
 import { checkAndFireAlerts } from "../lib/alerts.js";
 import { pushSnapshot } from "../lib/backend.js";
+import { ALARM_NAME, syncBackgroundPollingAlarm } from "../lib/background-alarm.js";
+import { isCheckNowRequest } from "../lib/messages.js";
 import type { UsageSnapshot } from "../providers/types.js";
 
-const ALARM_NAME = "usage-poll";
-const POLL_MINUTES = 5;
-
-// MV3 service workers are ephemeral — never use setInterval here.
-// chrome.alarms is what survives the worker being killed and restarted.
+// Default behavior is human-initiated: a read only happens when the popup
+// is opened or "Check Now" is clicked (see the onMessage listener below).
+// chrome.alarms only fires at all if the user has opted into Advanced
+// background polling in settings — MV3 service workers are ephemeral, so
+// when it is enabled, chrome.alarms (not setInterval) is what survives the
+// worker being killed and restarted between fires.
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.alarms.create(ALARM_NAME, { periodInMinutes: POLL_MINUTES });
-  void pollAll(); // run once immediately on install, don't wait for first alarm
+  void syncAlarmFromSettings();
 });
 
 chrome.runtime.onStartup.addListener(() => {
-  void pollAll();
+  void syncAlarmFromSettings();
 });
+
+async function syncAlarmFromSettings(): Promise<void> {
+  const settings = await getSettings();
+  await syncBackgroundPollingAlarm(settings.backgroundPollingEnabled);
+}
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === ALARM_NAME) {
@@ -25,7 +32,18 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-async function pollAll(): Promise<void> {
+// The popup asks for a fresh read through this message instead of
+// duplicating the read/save/badge/alert/push pipeline itself — this stays
+// the single source of truth for it regardless of what triggered a check.
+chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
+  if (isCheckNowRequest(message)) {
+    void pollAll().then((snapshots) => sendResponse({ snapshots }));
+    return true; // keep the message channel open for the async sendResponse above
+  }
+  return undefined;
+});
+
+async function pollAll(): Promise<UsageSnapshot[]> {
   const settings = await getSettings();
 
   const snapshots: UsageSnapshot[] = await Promise.all([claudeReader.read()]);
@@ -46,6 +64,8 @@ async function pollAll(): Promise<void> {
       });
     }
   }
+
+  return snapshots;
 }
 
 function updateBadge(snapshots: UsageSnapshot[]): void {

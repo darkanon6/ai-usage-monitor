@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AI Usage Monitor</title>
+  <title>Usage Monitor</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon192.png" />
   <meta name="theme-color" content="#141516" />
@@ -62,10 +62,12 @@
     th, td { text-align: left; padding: 4px 6px; }
     th { color: #888; font-weight: normal; }
     tr:nth-child(even) { background: rgba(128, 128, 128, 0.08); }
+    footer { margin-top: 28px; font-size: 11px; color: #999; }
+    footer a { color: inherit; }
   </style>
 </head>
 <body>
-  <h1><img src="icons/icon192.png" alt="" />AI Usage Monitor</h1>
+  <h1><img src="icons/icon192.png" alt="" />Usage Monitor</h1>
 
   <div class="card">
     <div id="limits"><em style="font-size:13px;color:#999;">Loading…</em></div>
@@ -79,6 +81,8 @@
     </thead>
     <tbody id="history-body"></tbody>
   </table>
+
+  <footer><a href="privacy.html">Privacy Policy</a></footer>
 
   <script src="app.js" type="module"></script>
 </body>

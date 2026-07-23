@@ -4,6 +4,7 @@ const SHELL_FILES = [
   "index.html",
   "app.js",
   "manifest.webmanifest",
+  "privacy.html",
   "icons/icon192.png",
   "icons/icon512.png",
 ];

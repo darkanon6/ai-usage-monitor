@@ -157,7 +157,7 @@ export interface TestAlertResult {
 }
 
 const TEST_ALERT_MESSAGE =
-  "✅ Test alert from Claude Usage Monitor — if you see this, the connection works.";
+  "✅ Test alert from Usage Monitor — if you see this, the connection works.";
 
 async function testSend(
   channel: TestAlertResult["channel"],

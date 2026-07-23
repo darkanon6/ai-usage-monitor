@@ -1,4 +1,4 @@
-# AI Usage Monitor — Backend
+# Usage Monitor — Backend
 
 A small self-hosted receiver + dashboard for the snapshots the extension
 already collects. Run it on your own hardware — **LAN-only, no auth**, meant
@@ -70,7 +70,7 @@ is the smallest addition) before doing so — don't port-forward this as-is.
 
 ## Why hand-rolled HTTP instead of Express/Fastify
 
-Same reasoning as the extension itself (see the root `CLAUDE_CODE_HANDOFF.md`):
+Same reasoning as the extension itself (see the root `CLAUDE.md`):
 three routes plus static file serving doesn't need a framework. The one
 real dependency is `better-sqlite3` (native binding, prebuilt binaries for
 common platforms) — chosen over a hand-rolled file store because SQL makes
