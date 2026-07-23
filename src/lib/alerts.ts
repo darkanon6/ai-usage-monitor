@@ -1,15 +1,9 @@
 import type { UsageSnapshot } from "../providers/types.js";
 import type { Settings } from "./settings.js";
 
-// De-dup state: for each limit+threshold pair (keyed by provider+type+model+
-// threshold), track whether it's "armed" — i.e. eligible to fire again. A
-// limit is armed when its usage is below that specific threshold. Crossing
-// the threshold while armed fires an alert and disarms it; it only re-arms
-// once usage drops back below that same threshold (e.g. after a session/
-// weekly reset). Without this, we'd send a Discord message every 5 minutes
-// forever once you're over the threshold. Each configured threshold is
-// tracked independently, so crossing 50%, 80%, and 95% in the same poll
-// fires all three.
+// armed = eligible to fire again. below threshold = armed, crossing it fires
+// once and disarms, only re-arms by dropping back below. otherwise we'd spam
+// a Discord message every 5 min forever once you're over the threshold
 const ALERT_STATE_KEY = "alertState";
 type AlertState = Record<string, { armed: boolean }>;
 
@@ -33,10 +27,8 @@ export interface AlertContext {
   thresholdPct: number;
 }
 
-// Discord and Slack both render basic Markdown in messages by default, but
-// use different bold syntax (** vs *). Telegram needs an explicit parse_mode
-// to render Markdown at all, so its message is kept plain to avoid literal
-// asterisks showing up in the chat.
+// discord/slack bold differently (** vs *), telegram needs parse_mode to render
+// markdown at all so it just stays plain to avoid literal asterisks showing up
 export function formatForDiscord(ctx: AlertContext): string {
   return `⚠️ **${ctx.provider}** — ${ctx.label} crossed **${ctx.thresholdPct}%** (now at ${ctx.pct}%)`;
 }
@@ -49,9 +41,7 @@ export function formatForTelegram(ctx: AlertContext): string {
   return `⚠️ ${ctx.provider} — ${ctx.label} crossed ${ctx.thresholdPct}% (now at ${ctx.pct}%)`;
 }
 
-// These take a pre-formatted message body rather than an AlertContext so
-// that sendTestAlert() below can reuse the exact same HTTP-sending code
-// with a canned test message, instead of a real threshold-crossing message.
+// plain text in, not AlertContext, so sendTestAlert() can reuse these with a canned message
 async function sendDiscordAlert(webhookUrl: string, text: string): Promise<Response> {
   return fetch(webhookUrl, {
     method: "POST",
@@ -89,7 +79,7 @@ async function fanOutAlert(settings: Settings, ctx: AlertContext): Promise<void>
     sends.push(sendSlackAlert(settings.slackWebhookUrl, formatForSlack(ctx)));
   }
 
-  // Don't let one channel's failure (bad token, rate limit, etc.) block the others.
+  // one bad channel (bad token, rate limit) shouldn't block the rest
   await Promise.allSettled(sends);
 }
 
@@ -104,15 +94,13 @@ export async function checkAndFireAlerts(
     if (!snapshot.ok) continue;
 
     for (const limit of snapshot.limits) {
-      // Each configured threshold is armed/disarmed independently, so a jump
-      // that crosses several at once (e.g. 40% -> 96% crossing 50/80/95) fires
-      // once per threshold in this same pass rather than just the first one.
+      // each threshold armed/disarmed independently - a jump from 40% to 96%
+      // crosses 50/80/95 all at once and should fire all three, not just one
       for (const threshold of settings.alertThresholds) {
         const key = limitKey(snapshot.provider, limit.type, limit.model, threshold);
         const entry = state[key] ?? { armed: true };
 
         if (limit.usedPct < threshold) {
-          // Below threshold — make sure it's armed for next time it climbs.
           if (!entry.armed) {
             state[key] = { armed: true };
             stateChanged = true;
@@ -120,7 +108,6 @@ export async function checkAndFireAlerts(
           continue;
         }
 
-        // At/above threshold: fire only if still armed.
         if (entry.armed) {
           state[key] = { armed: false };
           stateChanged = true;
@@ -174,11 +161,9 @@ async function testSend(
   }
 }
 
-// Fires a canned message straight through the same per-channel send
-// functions real alerts use, bypassing checkAndFireAlerts entirely — this
-// must never read or write the armed/disarmed alert state. Takes raw
-// input rather than a full Settings object so the options page can test
-// values typed into the form before they've been saved.
+// canned message through the same send functions, skips checkAndFireAlerts
+// entirely - never touches armed/disarmed state. takes raw input instead of
+// Settings so the options page can test values before hitting Save
 export async function sendTestAlert(input: TestAlertInput): Promise<TestAlertResult[]> {
   const tasks: Promise<TestAlertResult>[] = [];
 

@@ -20,8 +20,7 @@ export interface SnapshotStore {
   close(): void;
 }
 
-// Factory rather than a module-level singleton so tests can open an
-// isolated (in-memory) store instead of touching the real usage.db file.
+// factory not a singleton, so tests get their own :memory: store
 export function openStore(dbPath: string): SnapshotStore {
   if (dbPath !== ":memory:") {
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });

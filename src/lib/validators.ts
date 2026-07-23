@@ -1,5 +1,4 @@
-// Format checks for the options page. Kept as pure functions (no DOM) so
-// they're easy to unit test and reuse if validation is ever needed elsewhere.
+// pure functions, no DOM - easy to unit test
 
 export function isValidDiscordWebhook(url: string): boolean {
   return /^https:\/\/(discord|discordapp)\.com\/api\/webhooks\/\d+\/[\w-]+\/?$/.test(url);
@@ -22,9 +21,7 @@ export function isValidThreshold(raw: string): boolean {
   return raw.trim().length > 0 && Number.isInteger(n) && n >= 1 && n <= 100;
 }
 
-// Dedupe and sort ascending — keeps the alert-checking loop and the options
-// page display simple, and makes save() idempotent regardless of the order
-// rows were added/edited in.
+// dedupe + sort so save() is idempotent no matter what order rows got edited in
 export function normalizeThresholds(thresholds: number[]): number[] {
   return Array.from(new Set(thresholds)).sort((a, b) => a - b);
 }

@@ -57,12 +57,9 @@ function isUsageLimit(value: unknown): value is UsageLimit {
   );
 }
 
-// Deliberately strict, not just a shape check: this is the only gate on data
-// that gets stored and later rendered by the dashboard, and POST /snapshots
-// has no auth (LAN-only by design, see CLAUDE.md) — rejecting anything with
-// the wrong field types here is cheap insurance, though it's the rendering
-// side (app.js/popup.ts escaping untrusted strings) that actually closes the
-// XSS risk, since a well-formed *string* can still contain markup.
+// strict on purpose - no auth on this endpoint so this is the only real gate.
+// doesn't stop XSS by itself though (a valid string can still be markup),
+// that's handled by escaping on the render side (app.js/popup.ts)
 function isUsageSnapshot(value: unknown): value is UsageSnapshot {
   if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
@@ -83,9 +80,7 @@ function serveStatic(res: http.ServerResponse, publicDir: string, pathname: stri
   const filePath = path.normalize(path.join(publicDir, relative));
   const publicDirWithSep = publicDir.endsWith(path.sep) ? publicDir : publicDir + path.sep;
 
-  // filePath.startsWith(publicDir) alone would also match a sibling
-  // directory that happens to share the prefix (e.g. publicDir + "-evil"),
-  // so the comparison needs the trailing separator.
+  // need the trailing slash here or a sibling dir like publicDir+"-evil" would pass startsWith too
   if (filePath !== publicDir && !filePath.startsWith(publicDirWithSep)) {
     res.writeHead(403);
     res.end();
@@ -101,8 +96,7 @@ function serveStatic(res: http.ServerResponse, publicDir: string, pathname: stri
   return true;
 }
 
-// Factory rather than a top-level side effect so tests can spin up a server
-// against an in-memory store + temp public dir on an ephemeral port.
+// factory so tests can spin up a real server on an ephemeral port
 export function createServer(store: SnapshotStore, publicDir: string): http.Server {
   return http.createServer((req, res) => {
     void (async () => {
@@ -110,13 +104,9 @@ export function createServer(store: SnapshotStore, publicDir: string): http.Serv
 
       try {
         if (req.method === "POST" && url.pathname === "/snapshots") {
-          // Requiring the real content type means a cross-site fetch() has to
-          // use one that triggers a CORS preflight — which this server never
-          // answers with an Access-Control-Allow-Origin header, so browsers
-          // block it. Without this check, a "simple request" (e.g.
-          // Content-Type: text/plain) skips preflight and would be sent —
-          // and processed here regardless of what it claimed to be — letting
-          // any page a browser on this network visits blind-POST snapshots.
+          // stops a CSRF trick: text/plain skips CORS preflight so a random
+          // page you visit could blind-POST here otherwise. requiring real
+          // JSON forces the preflight, which this server never approves
           const contentType = req.headers["content-type"] ?? "";
           if (!contentType.toLowerCase().includes("application/json")) {
             sendJson(res, 415, { error: "Content-Type must be application/json" });
@@ -167,9 +157,7 @@ export function createServer(store: SnapshotStore, publicDir: string): http.Serv
           sendJson(res, 400, { error: "body is not valid JSON" });
           return;
         }
-        // Log the real error server-side, but don't hand internal details
-        // (stack traces, file paths) back to the client for anything
-        // unexpected.
+        // log it server-side, don't leak internals to the client
         console.error("Unhandled request error:", err);
         sendJson(res, 500, { error: "internal server error" });
       }

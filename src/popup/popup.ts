@@ -9,9 +9,8 @@ function barColor(pct: number): string {
   return "#2f9e44";
 }
 
-// label/error ultimately trace back to Claude's own API response — trusted
-// today, but this is rendered via innerHTML, so escape it anyway rather than
-// assume that trust boundary never changes.
+// label/error come from Claude's API, trusted for now, but this goes into
+// innerHTML so escape it anyway
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -68,10 +67,8 @@ async function checkNow(): Promise<void> {
 
 document.getElementById("check-now")!.addEventListener("click", () => void checkNow());
 
-// Show whatever's cached instantly (fast paint, works even if the network
-// check that follows is slow or fails), then trigger a fresh check right
-// away — opening the popup is itself the "human-initiated" read, per the
-// human-initiated-default design (background polling is opt-in only).
+// paint the cache instantly, then kick off a real check - opening the
+// popup IS the human-initiated read
 async function init(): Promise<void> {
   render(await getAllSnapshots());
   void checkNow();

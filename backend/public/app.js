@@ -7,9 +7,7 @@ function barColor(pct) {
   return "#2f9e44";
 }
 
-// label/error come from POST /snapshots, which has no auth (LAN-only by
-// design) — anyone reaching this backend could set them to anything, so
-// they're escaped before going into innerHTML rather than trusted as-is.
+// no auth on POST /snapshots means label/error could be anything - escape before innerHTML
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -82,8 +80,7 @@ setInterval(() => void refresh(), REFRESH_MS);
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("service-worker.js").catch(() => {
-      // Installability is a nice-to-have; a failed SW registration shouldn't
-      // block the dashboard itself from working.
+      // meh, dashboard still works without it
     });
   });
 }

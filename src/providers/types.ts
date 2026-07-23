@@ -1,7 +1,5 @@
-// The one shape every provider reader must return.
-// The rest of the extension (badge, popup, alerts) only ever talks to this
-// shape, never to a provider's raw response. This is what keeps the app
-// working even when one provider's endpoint changes.
+// every provider reader returns this shape - badge/popup/alerts only ever
+// talk to this, never a provider's raw response
 
 export interface UsageLimit {
   type: "session" | "weekly" | "daily" | "per_model";

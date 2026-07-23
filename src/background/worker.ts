@@ -7,12 +7,9 @@ import { ALARM_NAME, syncBackgroundPollingAlarm } from "../lib/background-alarm.
 import { isCheckNowRequest } from "../lib/messages.js";
 import type { UsageSnapshot } from "../providers/types.js";
 
-// Default behavior is human-initiated: a read only happens when the popup
-// is opened or "Check Now" is clicked (see the onMessage listener below).
-// chrome.alarms only fires at all if the user has opted into Advanced
-// background polling in settings — MV3 service workers are ephemeral, so
-// when it is enabled, chrome.alarms (not setInterval) is what survives the
-// worker being killed and restarted between fires.
+// default is human-initiated (popup open / Check Now). alarms only fire if
+// Advanced mode is on - using chrome.alarms not setInterval since MV3 kills
+// this worker whenever it feels like it
 chrome.runtime.onInstalled.addListener(() => {
   void syncAlarmFromSettings();
 });
@@ -32,13 +29,11 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-// The popup asks for a fresh read through this message instead of
-// duplicating the read/save/badge/alert/push pipeline itself — this stays
-// the single source of truth for it regardless of what triggered a check.
+// popup asks for a check through here instead of duplicating the pipeline itself
 chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
   if (isCheckNowRequest(message)) {
     void pollAll().then((snapshots) => sendResponse({ snapshots }));
-    return true; // keep the message channel open for the async sendResponse above
+    return true; // keeps the channel open so the async sendResponse above actually works
   }
   return undefined;
 });
@@ -55,8 +50,7 @@ async function pollAll(): Promise<UsageSnapshot[]> {
   updateBadge(snapshots);
   await checkAndFireAlerts(snapshots, settings);
 
-  // Fire-and-forget: a slow or unreachable LAN backend must never delay the
-  // badge update or alert check above.
+  // fire-and-forget - a dead backend shouldn't hold up the badge/alerts above
   if (settings.backendUrl) {
     for (const snapshot of snapshots) {
       void pushSnapshot(settings.backendUrl, snapshot).catch((err) => {

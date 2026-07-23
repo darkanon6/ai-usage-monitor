@@ -27,8 +27,7 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Network-first for everything: this is a live dashboard, cached shell is
-// only a fallback for the rare "phone lost the LAN connection" case.
+// network-first - cache is just a fallback for when you lose the LAN/tailnet
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request).catch(() => caches.match(event.request))

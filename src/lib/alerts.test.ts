@@ -19,9 +19,7 @@ function makeSnapshot(usedPct: number): UsageSnapshot {
   };
 }
 
-// checkAndFireAlerts talks to chrome.storage.local (de-dup state) and fetch
-// (webhook delivery), neither of which exist under plain `node --test`. This
-// mock is the minimal surface both need.
+// need to fake chrome.storage.local and fetch since neither exist under plain node --test
 function installChromeStorageMock(): void {
   const store: Record<string, unknown> = {};
   (globalThis as unknown as { chrome: unknown }).chrome = {

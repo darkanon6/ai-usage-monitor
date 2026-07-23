@@ -5,8 +5,7 @@ export interface Settings {
   slackWebhookUrl: string | null;
   alertThresholds: number[]; // fire once per limit, per threshold crossed; sorted ascending, deduped
   backendUrl: string | null; // self-hosted dashboard backend, e.g. http://192.168.1.50:3000
-  // Opt-in only. Default is human-initiated checks (popup open / Check Now);
-  // this re-enables the old always-on 5-minute chrome.alarms poll.
+  // opt-in - default is check-on-open, this brings back the old always-on 5min poll
   backgroundPollingEnabled: boolean;
 }
 

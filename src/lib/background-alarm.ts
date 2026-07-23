@@ -1,7 +1,5 @@
-// Shared between background/worker.ts (which listens for this alarm) and
-// options.ts (which creates/clears it directly when the user toggles
-// Advanced background polling, without needing to message the service
-// worker to do it).
+// shared with options.ts so it can flip the alarm on/off directly on save,
+// no need to message the service worker to do it
 export const ALARM_NAME = "usage-poll";
 export const POLL_MINUTES = 5;
 

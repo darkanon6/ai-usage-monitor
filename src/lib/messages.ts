@@ -1,7 +1,5 @@
-// Shared between popup.ts (sender) and background/worker.ts (receiver) so
-// a manual or popup-open check funnels through the worker's single
-// read -> save -> badge -> alerts -> backend-push pipeline, instead of the
-// popup duplicating any of that itself.
+// shared between popup.ts (sender) and worker.ts (receiver) - a popup-open
+// check goes through the worker's one pipeline instead of duplicating it
 import type { UsageSnapshot } from "../providers/types.js";
 
 export const CHECK_NOW_MESSAGE = "CHECK_NOW";

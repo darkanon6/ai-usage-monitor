@@ -1,6 +1,4 @@
-// Mirrors src/providers/types.ts in the extension. Kept as an independent
-// copy rather than a cross-project import — the backend is a standalone
-// deployable and shouldn't reach into the extension's build.
+// mirrors src/providers/types.ts - kept separate since this deploys on its own
 
 export interface UsageLimit {
   type: "session" | "weekly" | "daily" | "per_model";

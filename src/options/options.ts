@@ -103,9 +103,8 @@ async function save(): Promise<void> {
   const backendUrlRaw = (document.getElementById("backend-url") as HTMLInputElement).value.trim();
   const backgroundPollingEnabled = (document.getElementById("background-polling") as HTMLInputElement).checked;
 
-  // Each field is optional (blank disables that channel), but if filled in,
-  // it must actually look like the thing it claims to be — otherwise a typo
-  // fails silently later, only visible in the service worker console.
+  // blank = disabled, but if you did type something it needs to look right,
+  // otherwise a typo just fails silently later in the service worker console
   let hasError = false;
 
   if (thresholdRaws.some((raw) => !isValidThreshold(raw))) {
@@ -152,9 +151,7 @@ async function save(): Promise<void> {
 
   if (hasError) return;
 
-  // The extension has no host_permissions for arbitrary addresses up front
-  // (declared as optional_host_permissions instead) — request access to
-  // this specific origin only once the user actually configures it.
+  // no broad host_permissions up front - only ask for this one origin, right now
   if (backendUrlRaw.length > 0) {
     const origin = new URL(backendUrlRaw);
     const granted = await chrome.permissions.request({
@@ -176,8 +173,7 @@ async function save(): Promise<void> {
     backgroundPollingEnabled,
   });
 
-  // Applied immediately rather than waiting for the service worker's next
-  // onInstalled/onStartup sync, so toggling this actually takes effect now.
+  // apply now instead of waiting for the worker's next onInstalled/onStartup sync
   await syncBackgroundPollingAlarm(backgroundPollingEnabled);
 
   const savedEl = document.getElementById("saved")!;

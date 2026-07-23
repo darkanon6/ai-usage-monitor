@@ -2,9 +2,7 @@ import type { ProviderReader, UsageSnapshot, UsageLimit } from "./types.js";
 
 const CLAUDE_ORIGIN = "https://claude.ai";
 
-// --- Shapes of Claude's own internal usage response (reverse-engineered
-// from DevTools). Undocumented and may change — if it does, this is the
-// only file that needs fixing. ---
+// reverse-engineered from DevTools, undocumented - if Claude changes this, fix it here
 export interface ClaudeLimitEntry {
   kind: string; // "session" | "weekly_all" | "weekly_scoped" | ...
   group: string;

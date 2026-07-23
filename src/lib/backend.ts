@@ -1,9 +1,7 @@
 import type { UsageSnapshot } from "../providers/types.js";
 
-// Pushes a snapshot to the user's self-hosted backend (see backend/). Only
-// called when a backendUrl is configured; the caller is expected to treat
-// this as fire-and-forget so a slow/unreachable LAN box never delays the
-// badge update or alert check.
+// pushes to your self-hosted backend if you've set one up - caller treats this
+// as fire-and-forget so a dead box never delays the badge/alert check
 export async function pushSnapshot(backendUrl: string, snapshot: UsageSnapshot): Promise<void> {
   const base = backendUrl.replace(/\/$/, "");
   await fetch(`${base}/snapshots`, {
