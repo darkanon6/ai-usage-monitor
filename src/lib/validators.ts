@@ -19,7 +19,14 @@ export function isValidTelegramChatId(chatId: string): boolean {
 
 export function isValidThreshold(raw: string): boolean {
   const n = Number(raw);
-  return raw.trim().length > 0 && Number.isFinite(n) && n >= 1 && n <= 100;
+  return raw.trim().length > 0 && Number.isInteger(n) && n >= 1 && n <= 100;
+}
+
+// Dedupe and sort ascending — keeps the alert-checking loop and the options
+// page display simple, and makes save() idempotent regardless of the order
+// rows were added/edited in.
+export function normalizeThresholds(thresholds: number[]): number[] {
+  return Array.from(new Set(thresholds)).sort((a, b) => a - b);
 }
 
 export function isValidBackendUrl(url: string): boolean {

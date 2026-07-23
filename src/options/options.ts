@@ -1,4 +1,5 @@
 import { getSettings, saveSettings } from "../lib/settings.js";
+import { sendTestAlert } from "../lib/alerts.js";
 import {
   isValidDiscordWebhook,
   isValidSlackWebhook,
@@ -6,13 +7,71 @@ import {
   isValidTelegramChatId,
   isValidThreshold,
   isValidBackendUrl,
+  normalizeThresholds,
 } from "../lib/validators.js";
+
+const MAX_THRESHOLDS = 5;
+
+function thresholdsContainer(): HTMLElement {
+  return document.getElementById("thresholds")!;
+}
+
+function thresholdInputs(): HTMLInputElement[] {
+  return Array.from(thresholdsContainer().querySelectorAll<HTMLInputElement>(".threshold-input"));
+}
+
+function addThresholdRow(value: number): void {
+  const row = document.createElement("div");
+  row.className = "threshold-row";
+
+  const input = document.createElement("input");
+  input.type = "number";
+  input.min = "1";
+  input.max = "100";
+  input.className = "threshold-input";
+  input.value = String(value);
+
+  const percent = document.createElement("span");
+  percent.textContent = "%";
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "btn-secondary";
+  removeBtn.textContent = "Remove";
+  removeBtn.addEventListener("click", () => {
+    row.remove();
+    updateAddThresholdButton();
+  });
+
+  row.appendChild(input);
+  row.appendChild(percent);
+  row.appendChild(removeBtn);
+  thresholdsContainer().appendChild(row);
+  updateAddThresholdButton();
+}
+
+function updateAddThresholdButton(): void {
+  const addBtn = document.getElementById("add-threshold") as HTMLButtonElement;
+  addBtn.disabled = thresholdInputs().length >= MAX_THRESHOLDS;
+}
+
+document.getElementById("add-threshold")!.addEventListener("click", () => {
+  const current = thresholdInputs()
+    .map((i) => Number(i.value))
+    .filter((n) => Number.isFinite(n));
+  const highest = current.length > 0 ? Math.max(...current) : 0;
+  const suggestion = Math.min(100, Math.round((highest + 100) / 2));
+  addThresholdRow(suggestion);
+});
 
 async function load(): Promise<void> {
   const settings = await getSettings();
 
-  (document.getElementById("threshold") as HTMLInputElement).value =
-    String(settings.alertThresholdPct);
+  thresholdsContainer().innerHTML = "";
+  for (const threshold of settings.alertThresholds) {
+    addThresholdRow(threshold);
+  }
+
   (document.getElementById("webhook") as HTMLInputElement).value =
     settings.discordWebhookUrl ?? "";
   (document.getElementById("telegram-token") as HTMLInputElement).value =
@@ -33,7 +92,7 @@ function setError(fieldId: string, message: string | null): void {
 }
 
 async function save(): Promise<void> {
-  const thresholdRaw = (document.getElementById("threshold") as HTMLInputElement).value.trim();
+  const thresholdRaws = thresholdInputs().map((i) => i.value.trim());
   const webhookRaw = (document.getElementById("webhook") as HTMLInputElement).value.trim();
   const telegramTokenRaw = (document.getElementById("telegram-token") as HTMLInputElement).value.trim();
   const telegramChatIdRaw = (document.getElementById("telegram-chatid") as HTMLInputElement).value.trim();
@@ -45,11 +104,11 @@ async function save(): Promise<void> {
   // fails silently later, only visible in the service worker console.
   let hasError = false;
 
-  if (!isValidThreshold(thresholdRaw)) {
-    setError("threshold", "Enter a number between 1 and 100.");
+  if (thresholdRaws.some((raw) => !isValidThreshold(raw))) {
+    setError("thresholds", "Each threshold must be a whole number between 1 and 100.");
     hasError = true;
   } else {
-    setError("threshold", null);
+    setError("thresholds", null);
   }
 
   if (webhookRaw.length > 0 && !isValidDiscordWebhook(webhookRaw)) {
@@ -108,7 +167,7 @@ async function save(): Promise<void> {
     telegramBotToken: telegramTokenRaw.length > 0 ? telegramTokenRaw : null,
     telegramChatId: telegramChatIdRaw.length > 0 ? telegramChatIdRaw : null,
     slackWebhookUrl: slackWebhookRaw.length > 0 ? slackWebhookRaw : null,
-    alertThresholdPct: Number(thresholdRaw),
+    alertThresholds: normalizeThresholds(thresholdRaws.map(Number)),
     backendUrl: backendUrlRaw.length > 0 ? backendUrlRaw : null,
   });
 
@@ -117,5 +176,43 @@ async function save(): Promise<void> {
   setTimeout(() => (savedEl.style.display = "none"), 1500);
 }
 
+const CHANNEL_LABELS: Record<string, string> = {
+  discord: "Discord",
+  telegram: "Telegram",
+  slack: "Slack",
+};
+
+async function runTestAlert(): Promise<void> {
+  const resultsEl = document.getElementById("test-results")!;
+  resultsEl.innerHTML = "";
+
+  const webhookRaw = (document.getElementById("webhook") as HTMLInputElement).value.trim();
+  const telegramTokenRaw = (document.getElementById("telegram-token") as HTMLInputElement).value.trim();
+  const telegramChatIdRaw = (document.getElementById("telegram-chatid") as HTMLInputElement).value.trim();
+  const slackWebhookRaw = (document.getElementById("slack-webhook") as HTMLInputElement).value.trim();
+
+  const results = await sendTestAlert({
+    discordWebhookUrl: webhookRaw.length > 0 ? webhookRaw : null,
+    telegramBotToken: telegramTokenRaw.length > 0 ? telegramTokenRaw : null,
+    telegramChatId: telegramChatIdRaw.length > 0 ? telegramChatIdRaw : null,
+    slackWebhookUrl: slackWebhookRaw.length > 0 ? slackWebhookRaw : null,
+  });
+
+  if (results.length === 0) {
+    const li = document.createElement("li");
+    li.textContent = "No channels configured to test.";
+    resultsEl.appendChild(li);
+    return;
+  }
+
+  for (const result of results) {
+    const li = document.createElement("li");
+    const label = CHANNEL_LABELS[result.channel];
+    li.textContent = result.ok ? `✅ ${label} sent` : `❌ ${label} failed: ${result.error}`;
+    resultsEl.appendChild(li);
+  }
+}
+
+document.getElementById("test-alert")!.addEventListener("click", () => void runTestAlert());
 document.getElementById("save")!.addEventListener("click", () => void save());
 void load();

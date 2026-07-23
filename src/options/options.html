@@ -4,96 +4,239 @@
   <meta charset="utf-8" />
   <title>Claude Usage Monitor — Settings</title>
   <style>
+    :root {
+      --brand-green: #0fae37;       /* icon's brain/circuit green (decorative use) */
+      --brand-green-deep: #0b7a27;  /* darkened for AA-safe text/buttons */
+      --brand-orange: #c15f3c;      /* icon's clock-face orange (decorative use) */
+      --brand-orange-deep: #a45133; /* darkened for AA-safe text/buttons */
+      --brand-dark: #171715;        /* icon's card background */
+      --page-bg: #8F9094;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      max-width: 420px;
+      max-width: 460px;
       margin: 24px auto;
-      padding: 0 16px;
-      color: #222;
+      padding: 0 16px 32px;
+      background: var(--page-bg);
+      color: #1a1a1a;
     }
-    h1 { font-size: 18px; }
-    h2 { font-size: 13px; text-transform: uppercase; color: #888; margin-top: 28px; }
-    label { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-size: 14px; }
-    label.disabled { color: #aaa; }
+    .header-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--brand-dark);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 0 0 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .header-banner img {
+      width: 42px;
+      height: 42px;
+      border-radius: 9px;
+      display: block;
+      flex-shrink: 0;
+    }
+    .header-banner h1 { font-size: 17px; color: #fff; margin: 0; }
+    .header-banner .subtitle { font-size: 12.5px; color: #cfd0cd; margin: 3px 0 0; }
+    .card {
+      background: #ffffff;
+      border-radius: 10px;
+      border-top: 4px solid var(--brand-green);
+      padding: 16px 18px 18px;
+      margin: 16px 0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+    }
+    h2 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--brand-green-deep);
+      margin: 0 0 10px;
+    }
+    label { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-size: 14px; color: #1a1a1a; }
+    label.disabled { color: #999; }
     input[type="text"], input[type="number"] {
       width: 100%;
-      padding: 6px 8px;
+      padding: 7px 8px;
       box-sizing: border-box;
       font-size: 13px;
       margin-top: 4px;
+      border: 1px solid #bbb;
+      border-radius: 5px;
+      background: #fafafa;
+      color: #1a1a1a;
     }
-    .hint { font-size: 11px; color: #999; margin-top: 4px; }
-    .error { font-size: 11px; color: #e03131; margin-top: 4px; display: none; }
+    input[type="text"]:focus, input[type="number"]:focus {
+      outline: none;
+      border-color: var(--brand-green-deep);
+      background: #fff;
+    }
+    .intro { font-size: 13px; color: #333; margin: 0 0 8px; line-height: 1.5; }
+    .steps { margin: 6px 0 10px; padding-left: 18px; font-size: 12.5px; color: #3a3a3a; line-height: 1.55; }
+    .steps li { margin: 3px 0; }
+    .hint { font-size: 12px; color: #555; margin-top: 6px; line-height: 1.4; }
+    .error { font-size: 12px; color: #c92a2a; margin-top: 6px; display: none; }
     button {
-      margin-top: 20px;
       padding: 8px 16px;
       font-size: 14px;
       cursor: pointer;
+      border-radius: 6px;
+      border: none;
     }
-    #saved { font-size: 12px; color: #2f9e44; margin-left: 10px; }
+    .btn-primary { background: var(--brand-orange-deep); color: #fff; }
+    .btn-primary:hover { background: #8a4029; }
+    .btn-secondary { background: #fff; color: #1a1a1a; border: 1px solid var(--brand-green-deep); }
+    .btn-secondary:hover { background: #f0f7f1; }
+    #saved { font-size: 12px; color: var(--brand-green-deep); margin-left: 10px; }
+    .threshold-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 6px 0;
+      font-size: 13px;
+    }
+    .threshold-row input[type="number"] {
+      width: 60px;
+      margin-top: 0;
+    }
+    .threshold-row button {
+      margin-top: 0;
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+    #add-threshold { margin-top: 8px; padding: 6px 12px; font-size: 13px; }
+    #test-alert { margin-top: 4px; padding: 6px 12px; font-size: 13px; }
+    #test-results {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0 0;
+      font-size: 13px;
+    }
+    #test-results li { margin: 4px 0; }
+    .save-bar { margin-top: 20px; }
+    .contact-note {
+      margin-top: 24px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(0, 0, 0, 0.15);
+      font-size: 12px;
+      color: #222;
+      line-height: 1.5;
+    }
+    .contact-note a { color: var(--brand-green-deep); font-weight: 600; text-decoration: none; }
+    .contact-note a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <h1>Claude Usage Monitor — Settings</h1>
-
-  <h2>Alert threshold</h2>
-  <label>
-    Notify me when a limit reaches
-    <input type="number" id="threshold" min="1" max="100" style="width:60px" />%
-  </label>
-  <div class="error" id="threshold-error"></div>
-
-  <h2>Discord alerts</h2>
-  <label style="display:block;">
-    Webhook URL
-    <input type="text" id="webhook" placeholder="https://discord.com/api/webhooks/..." />
-  </label>
-  <div class="hint">Server Settings → Integrations → Webhooks → New Webhook → Copy URL. Leave blank to disable.</div>
-  <div class="error" id="webhook-error"></div>
-
-  <h2>Telegram alerts</h2>
-  <label style="display:block;">
-    Bot token
-    <input type="text" id="telegram-token" placeholder="123456789:AAxxxxxxxxxxxxxxxxxxxxxx" />
-  </label>
-  <div class="error" id="telegram-token-error"></div>
-  <label style="display:block; margin-top:8px;">
-    Chat ID
-    <input type="text" id="telegram-chatid" placeholder="123456789" />
-  </label>
-  <div class="error" id="telegram-chatid-error"></div>
-  <div class="hint">
-    Message <strong>@BotFather</strong> on Telegram → /newbot → copy the token.
-    Then message your new bot once, and visit
-    <code>https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</code> in a browser
-    to find your chat ID in the response. Leave blank to disable.
+  <div class="header-banner">
+    <img src="../../icons/icon128.png" alt="AI Usage Monitor icon" />
+    <div>
+      <h1>Usage Monitor for Claude(Unofficial) — Settings</h1>
+      <p class="subtitle">Set up how and when you'd like to hear about your usage.</p>
+    </div>
   </div>
 
-  <h2>Slack alerts</h2>
-  <label style="display:block;">
-    Webhook URL
-    <input type="text" id="slack-webhook" placeholder="https://hooks.slack.com/services/..." />
-  </label>
-  <div class="hint">Slack app settings → Incoming Webhooks → Add New Webhook to Workspace → Copy URL. Leave blank to disable.</div>
-  <div class="error" id="slack-webhook-error"></div>
+  <section class="card">
+    <h2>Alert Thresholds</h2>
+    <p class="intro">
+      Add as many percentage checkpoints as you'd like, you'll get pinged
+      every time usage climbs past one, tracked separately for each limit
+      (session, weekly, and so on).
+    </p>
+    <div id="thresholds"></div>
+    <button type="button" id="add-threshold" class="btn-secondary">+ Add threshold</button>
+    <div class="error" id="thresholds-error"></div>
+  </section>
 
-  <h2>Self-hosted dashboard</h2>
-  <label style="display:block;">
-    Backend URL
-    <input type="text" id="backend-url" placeholder="http://192.168.1.50:3000" />
-  </label>
-  <div class="hint">
-    Address of your own <code>backend/</code> server (see the repo's
-    <code>backend/README.md</code>). Saving this will prompt Chrome to ask
-    permission to reach that address — needed since the extension talks to
-    it directly. Leave blank to disable.
-  </div>
-  <div class="error" id="backend-url-error"></div>
+  <section class="card">
+    <h2>Slack Alerts</h2>
+    <p class="intro">Want a heads-up in Slack when a limit gets close? Here's how to connect it:</p>
+    <ol class="steps">
+      <li>In Slack, open your app settings and go to <strong>Incoming Webhooks</strong>.</li>
+      <li>Click <strong>Add New Webhook to Workspace</strong> and pick a channel.</li>
+      <li>Copy the webhook URL Slack gives you and paste it below.</li>
+    </ol>
+    <label style="display:block;">
+      Webhook URL
+      <input type="text" id="slack-webhook" placeholder="https://hooks.slack.com/services/..." />
+    </label>
+    <div class="hint">Leave this blank if you'd rather not use Slack.</div>
+    <div class="error" id="slack-webhook-error"></div>
+  </section>
 
-  <div>
-    <button id="save">Save</button>
+  <section class="card">
+    <h2>Discord Alerts</h2>
+    <p class="intro">Prefer Discord? It's just as quick from your server settings:</p>
+    <ol class="steps">
+      <li>Open <strong>Server Settings → Integrations → Webhooks</strong>.</li>
+      <li>Click <strong>New Webhook</strong> and name it whatever you like.</li>
+      <li>Copy the webhook URL and drop it in below.</li>
+    </ol>
+    <label style="display:block;">
+      Webhook URL
+      <input type="text" id="webhook" placeholder="https://discord.com/api/webhooks/..." />
+    </label>
+    <div class="hint">Leave this blank if you'd rather not use Discord.</div>
+    <div class="error" id="webhook-error"></div>
+  </section>
+
+  <section class="card">
+    <h2>Telegram Alerts</h2>
+    <p class="intro">Telegram takes one extra step since it needs both a bot and a chat ID:</p>
+    <ol class="steps">
+      <li>Message <strong>@BotFather</strong> on Telegram, send <code>/newbot</code>, and copy the token it gives you.</li>
+      <li>Send your new bot any message, then visit <code>https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</code> in a browser.</li>
+      <li>Find your chat ID in that response and paste both values in below.</li>
+    </ol>
+    <label style="display:block;">
+      Bot token
+      <input type="text" id="telegram-token" placeholder="123456789:AAxxxxxxxxxxxxxxxxxxxxxx" />
+    </label>
+    <div class="error" id="telegram-token-error"></div>
+    <label style="display:block; margin-top:8px;">
+      Chat ID
+      <input type="text" id="telegram-chatid" placeholder="123456789" />
+    </label>
+    <div class="error" id="telegram-chatid-error"></div>
+    <div class="hint">Leave both blank if you'd rather not use Telegram.</div>
+  </section>
+
+  <section class="card">
+    <h2>Self-hosted Dashboard</h2>
+    <p class="intro">Running your own dashboard at home? Point the extension at it to keep a history there too:</p>
+    <ol class="steps">
+      <li>Get the <code>backend/</code> server running (see <code>backend/README.md</code> in the repo).</li>
+      <li>Enter its address below, e.g. <code>http://192.168.1.50:3000</code>.</li>
+      <li>Saving will prompt Chrome to ask permission for that address — that's expected, just approve it.</li>
+    </ol>
+    <label style="display:block;">
+      Backend URL
+      <input type="text" id="backend-url" placeholder="http://192.168.1.50:3000" />
+    </label>
+    <div class="hint">Leave this blank if you don't have one set up.</div>
+    <div class="error" id="backend-url-error"></div>
+  </section>
+
+  <section class="card">
+    <h2>Test Your Alerts</h2>
+    <p class="intro">
+      Curious if a channel actually works? This sends a friendly test
+      message to everything filled in above, right now even before you
+      hit "Save" without counting as a real alert.
+    </p>
+    <button type="button" id="test-alert" class="btn-secondary">Send Test Alert</button>
+    <ul id="test-results"></ul>
+  </section>
+
+  <div class="save-bar">
+    <button id="save" class="btn-primary">Save</button>
     <span id="saved" style="display:none;">Saved ✓</span>
   </div>
+
+  <p class="contact-note">
+    Got feedback, found a bug, or just want to say hi?<br>Reach out anytime at
+    <a href="mailto:darktanon6@gmail.com">darktanon6@gmail.com</a>
+  </p>
 
   <script src="options.js" type="module"></script>
 </body>

@@ -7,6 +7,7 @@ import {
   isValidTelegramChatId,
   isValidThreshold,
   isValidBackendUrl,
+  normalizeThresholds,
 } from "./validators.js";
 
 test("isValidDiscordWebhook accepts a real-shaped webhook URL", () => {
@@ -57,6 +58,14 @@ test("isValidThreshold accepts 1-100 and rejects out-of-range or non-numeric inp
   assert.equal(isValidThreshold("101"), false);
   assert.equal(isValidThreshold(""), false);
   assert.equal(isValidThreshold("abc"), false);
+});
+
+test("isValidThreshold rejects non-integer values", () => {
+  assert.equal(isValidThreshold("50.5"), false);
+});
+
+test("normalizeThresholds dedupes and sorts ascending", () => {
+  assert.deepEqual(normalizeThresholds([95, 50, 80, 50]), [50, 80, 95]);
 });
 
 test("isValidBackendUrl accepts http/https URLs, including LAN addresses with a port", () => {

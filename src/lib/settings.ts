@@ -3,7 +3,7 @@ export interface Settings {
   telegramBotToken: string | null;
   telegramChatId: string | null;
   slackWebhookUrl: string | null;
-  alertThresholdPct: number; // fire an alert once usage crosses this, per limit
+  alertThresholds: number[]; // fire once per limit, per threshold crossed; sorted ascending, deduped
   backendUrl: string | null; // self-hosted dashboard backend, e.g. http://192.168.1.50:3000
 }
 
@@ -14,7 +14,7 @@ export const DEFAULT_SETTINGS: Settings = {
   telegramBotToken: null,
   telegramChatId: null,
   slackWebhookUrl: null,
-  alertThresholdPct: 80,
+  alertThresholds: [50, 80, 95],
   backendUrl: null,
 };
 
