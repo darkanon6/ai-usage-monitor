@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Claude Usage Monitor — Settings</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 420px;
+      margin: 24px auto;
+      padding: 0 16px;
+      color: #222;
+    }
+    h1 { font-size: 18px; }
+    h2 { font-size: 13px; text-transform: uppercase; color: #888; margin-top: 28px; }
+    label { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-size: 14px; }
+    label.disabled { color: #aaa; }
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 6px 8px;
+      box-sizing: border-box;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .hint { font-size: 11px; color: #999; margin-top: 4px; }
+    .error { font-size: 11px; color: #e03131; margin-top: 4px; display: none; }
+    button {
+      margin-top: 20px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #saved { font-size: 12px; color: #2f9e44; margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Claude Usage Monitor — Settings</h1>
+
+  <h2>Alert threshold</h2>
+  <label>
+    Notify me when a limit reaches
+    <input type="number" id="threshold" min="1" max="100" style="width:60px" />%
+  </label>
+  <div class="error" id="threshold-error"></div>
+
+  <h2>Discord alerts</h2>
+  <label style="display:block;">
+    Webhook URL
+    <input type="text" id="webhook" placeholder="https://discord.com/api/webhooks/..." />
+  </label>
+  <div class="hint">Server Settings → Integrations → Webhooks → New Webhook → Copy URL. Leave blank to disable.</div>
+  <div class="error" id="webhook-error"></div>
+
+  <h2>Telegram alerts</h2>
+  <label style="display:block;">
+    Bot token
+    <input type="text" id="telegram-token" placeholder="123456789:AAxxxxxxxxxxxxxxxxxxxxxx" />
+  </label>
+  <div class="error" id="telegram-token-error"></div>
+  <label style="display:block; margin-top:8px;">
+    Chat ID
+    <input type="text" id="telegram-chatid" placeholder="123456789" />
+  </label>
+  <div class="error" id="telegram-chatid-error"></div>
+  <div class="hint">
+    Message <strong>@BotFather</strong> on Telegram → /newbot → copy the token.
+    Then message your new bot once, and visit
+    <code>https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</code> in a browser
+    to find your chat ID in the response. Leave blank to disable.
+  </div>
+
+  <h2>Slack alerts</h2>
+  <label style="display:block;">
+    Webhook URL
+    <input type="text" id="slack-webhook" placeholder="https://hooks.slack.com/services/..." />
+  </label>
+  <div class="hint">Slack app settings → Incoming Webhooks → Add New Webhook to Workspace → Copy URL. Leave blank to disable.</div>
+  <div class="error" id="slack-webhook-error"></div>
+
+  <h2>Self-hosted dashboard</h2>
+  <label style="display:block;">
+    Backend URL
+    <input type="text" id="backend-url" placeholder="http://192.168.1.50:3000" />
+  </label>
+  <div class="hint">
+    Address of your own <code>backend/</code> server (see the repo's
+    <code>backend/README.md</code>). Saving this will prompt Chrome to ask
+    permission to reach that address — needed since the extension talks to
+    it directly. Leave blank to disable.
+  </div>
+  <div class="error" id="backend-url-error"></div>
+
+  <div>
+    <button id="save">Save</button>
+    <span id="saved" style="display:none;">Saved ✓</span>
+  </div>
+
+  <script src="options.js" type="module"></script>
+</body>
+</html>

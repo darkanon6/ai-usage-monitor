@@ -1,0 +1,10 @@
+services:
+  ai-usage-monitor-backend:
+    build: .
+    container_name: ai-usage-monitor-backend
+    restart: unless-stopped
+    ports:
+      # Host port : container port. Change the host side if 3000 is taken.
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
