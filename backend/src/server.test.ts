@@ -136,6 +136,22 @@ test("GET /snapshots/history returns newest-first and respects limit", async () 
   });
 });
 
+test("GET /snapshots/history?limit=-1 does not bypass the row cap (SQLite treats negative LIMIT as unlimited)", async () => {
+  await withServer(async (base) => {
+    for (const pct of [10, 20, 30]) {
+      await fetch(`${base}/snapshots`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(makeSnapshot(pct)),
+      });
+    }
+
+    const res = await fetch(`${base}/snapshots/history?provider=claude&limit=-1`);
+    const history = (await res.json()) as UsageSnapshot[];
+    assert.equal(history.length, 0);
+  });
+});
+
 test("GET / serves the dashboard's static index.html", async () => {
   await withServer(async (base) => {
     const res = await fetch(`${base}/`);

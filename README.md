@@ -9,12 +9,13 @@ dashboard if you want your usage history on more than one device.
 independent tool that reads usage info from your own account, the same way
 the Claude.ai website itself would show you.
 
-![Popup showing 5-hour session and 7-day usage bars, last checked time, and a Check Now button](screenshots/usage-monitor-extension.png)
+![Popup showing 5-hour session and 7-day usage bars with their reset countdowns, last checked time, and a Check Now button](screenshots/usage-monitor-reset.png)
 
 ## What it does
 
 - Shows your current 5-hour session and weekly usage as color-coded bars,
-  right in the toolbar popup
+  right in the toolbar popup, along with when each one resets ("Resets in
+  2h 34m")
 - Checks on demand — open the popup or hit "Check Now" — rather than
   polling in the background by default. There's an "Advanced" setting if
   you'd rather it check automatically every 5 minutes instead.
@@ -37,10 +38,14 @@ the Claude.ai website itself would show you.
 
 ## How to use it
 
-**Install:**
+**Install (from source):**
 1. `npm install && npm run build`
 2. `chrome://extensions` → enable Developer mode → Load unpacked → select
    the repo root (the folder with `manifest.json`, not `dist/`)
+
+Not comfortable building from source? See [`INSTALL.md`](INSTALL.md) for a
+plainer download-and-load walkthrough — same underlying steps, just without
+needing Node.
 
 **Day to day:** click the toolbar icon. It shows whatever was last checked,
 then immediately checks again — you'll see a "Checking…" flash and then
@@ -126,6 +131,11 @@ What each permission is for:
   `data/` directory on the host needed its ownership fixed too, or the
   container could build and start fine while silently failing to write
   the database.
+- **A "capped" limit wasn't actually capped.** `/snapshots/history?limit=`
+  was clamped with `Math.min(1000, ...)` but had no lower bound — SQLite
+  treats a *negative* `LIMIT` as "no limit at all," so `?limit=-1` quietly
+  returned the entire table instead of erroring or getting capped. Found
+  during a pre-launch security pass; fixed by clamping both ends.
 
 ## What I learned
 
@@ -153,5 +163,6 @@ gets perceived and used, not just how it works.
 
 ## Feedback
 
-Found a bug, or just want to say hi? `darktanon6@gmail.com`, or open an
-issue on GitHub.
+Found a bug, or just want to say hi? The options page footer links to my
+[GitHub](https://github.com/darkanon6) and
+[LinkedIn](https://www.linkedin.com/in/jacob-daniel-rweteshi/).

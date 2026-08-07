@@ -9,6 +9,22 @@ function barColor(pct: number): string {
   return "#2f9e44";
 }
 
+// "2h 34m" / "3d 5h" / "45m" — null once resetsAt is missing or already past
+function formatResetIn(resetsAt: string | null): string | null {
+  if (!resetsAt) return null;
+  const diffMs = new Date(resetsAt).getTime() - Date.now();
+  if (diffMs <= 0) return null;
+
+  const totalMinutes = Math.round(diffMs / 60_000);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
 // label/error come from Claude's API, trusted for now, but this goes into
 // innerHTML so escape it anyway
 function escapeHtml(value: string): string {
@@ -38,15 +54,17 @@ function render(snapshots: SnapshotMap): void {
   }
 
   limitsEl.innerHTML = claude.limits
-    .map(
-      (l) => `
+    .map((l) => {
+      const resetIn = formatResetIn(l.resetsAt);
+      return `
       <div class="limit-row">
         <div class="limit-label"><span>${escapeHtml(l.label)}</span><span>${Math.round(l.usedPct)}%</span></div>
         <div class="bar-track">
           <div class="bar-fill" style="width:${l.usedPct}%;background:${barColor(l.usedPct)}"></div>
         </div>
-      </div>`
-    )
+        ${resetIn ? `<div class="reset-note">Resets in ${resetIn}</div>` : ""}
+      </div>`;
+    })
     .join("");
 
   statusEl.textContent = `Last checked ${new Date(claude.fetchedAt).toLocaleTimeString()}`;

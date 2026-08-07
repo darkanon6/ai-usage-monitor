@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Usage Monitor",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Check your Claude.ai session and weekly usage percentage on demand, with optional Discord/Telegram/Slack alerts.",
   "permissions": ["storage", "alarms", "cookies"],
   "host_permissions": ["https://claude.ai/*", "https://discord.com/*", "https://api.telegram.org/*", "https://hooks.slack.com/*"],

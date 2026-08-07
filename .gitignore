@@ -1,5 +1,25 @@
 node_modules/
 dist/
 dist-test/
+release/
 
+# Local-only project notes/config, not for public distribution
 CLAUDE.md
+.claude/
+
+# Secrets and local environment files - never commit real values
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.crt
+credentials.json
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

@@ -138,7 +138,9 @@ export function createServer(store: SnapshotStore, publicDir: string): http.Serv
         if (req.method === "GET" && url.pathname === "/snapshots/history") {
           const provider = url.searchParams.get("provider") ?? "claude";
           const limitParam = Number(url.searchParams.get("limit") ?? 200);
-          const limit = Math.min(1000, Number.isFinite(limitParam) ? limitParam : 200);
+          // clamp both ends - SQLite treats a negative LIMIT as "no limit at
+          // all", so without the lower bound `?limit=-1` would bypass the cap
+          const limit = Math.max(0, Math.min(1000, Number.isFinite(limitParam) ? Math.trunc(limitParam) : 200));
           sendJson(res, 200, store.getHistory(provider, limit).map(rowToSnapshot));
           return;
         }

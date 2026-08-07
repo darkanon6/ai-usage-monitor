@@ -70,8 +70,7 @@ is the smallest addition) before doing so — don't port-forward this as-is.
 
 ## Why hand-rolled HTTP instead of Express/Fastify
 
-Same reasoning as the extension itself (see the root `CLAUDE.md`):
-three routes plus static file serving doesn't need a framework. The one
+Three routes plus static file serving doesn't need a framework. The one
 real dependency is `better-sqlite3` (native binding, prebuilt binaries for
 common platforms) — chosen over a hand-rolled file store because SQL makes
 `getLatestAll()` and `getHistory()` trivial instead of hand-written file

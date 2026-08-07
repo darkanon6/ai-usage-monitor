@@ -1,6 +1,6 @@
 {
   "name": "usage-monitor",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Browser extension that checks your Claude.ai usage percentage on demand, with optional Discord/Telegram/Slack alerts.",
   "type": "module",
@@ -8,7 +8,8 @@
     "build": "tsc && npm run copy-assets",
     "copy-assets": "mkdir -p dist/popup dist/options && cp src/popup/popup.html dist/popup/popup.html && cp src/options/options.html dist/options/options.html",
     "watch": "tsc --watch",
-    "test": "tsc -p tsconfig.test.json && node --test dist-test"
+    "test": "tsc -p tsconfig.test.json && node --test dist-test",
+    "package": "bash scripts/package.sh"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.270",
