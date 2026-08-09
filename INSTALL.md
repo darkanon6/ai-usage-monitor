@@ -26,9 +26,14 @@ minute.
 5. Select the folder you unzipped in step 1 (the one with `manifest.json`
    in it directly, not a subfolder).
 6. Usage Monitor's icon appears in your extensions list. Click the puzzle
-   piece icon in Chrome's toolbar and pin it so it's always visible.
+   piece icon in Chrome's toolbar and **pin it** so it's always visible —
+   pinned, the badge shows your highest usage percentage in real time
+   (color-coded green/orange/red) without needing to open the popup at all.
 
-That's it — click the icon any time to check your Claude.ai usage.
+That's it — click the icon any time to check your Claude.ai usage. By
+default it only checks when you open it; if you'd rather it check
+automatically in the background every 5 minutes, turn that on in the
+extension's options page under **Advanced**.
 
 ## Why the extra steps?
 

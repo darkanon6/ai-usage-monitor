@@ -47,10 +47,17 @@ Not comfortable building from source? See [`INSTALL.md`](INSTALL.md) for a
 plainer download-and-load walkthrough — same underlying steps, just without
 needing Node.
 
+**Pin it:** click the puzzle-piece icon in Chrome's toolbar and pin Usage
+Monitor so it's always visible. Pinned, the toolbar badge shows your
+highest usage percentage at a glance — color-coded green/orange/red — so
+you can see it updating in real time without opening the popup at all.
+
 **Day to day:** click the toolbar icon. It shows whatever was last checked,
 then immediately checks again — you'll see a "Checking…" flash and then
 fresh numbers. Hit "Check Now" any time you want to re-check without
-closing the popup.
+closing the popup. By default it only checks when you do this — if you'd
+rather it check automatically in the background every 5 minutes instead,
+flip that on in the options page's **Advanced** section (see below).
 
 **Set up alerts (optional):** open the extension's options page.
 - **Alert Thresholds** — add as many percentage checkpoints as you want
