@@ -9,7 +9,7 @@ dashboard if you want your usage history on more than one device.
 independent tool that reads usage info from your own account, the same way
 the Claude.ai website itself would show you.
 
-![Popup showing 5-hour session and 7-day usage bars with their reset countdowns, last checked time, and a Check Now button](screenshots/usage-monitor-reset.png)
+![Popup showing 5-hour session and 7-day usage bars with their reset countdowns, last checked time, and a Check Now button](screenshots/ai-usage-monitor-ext2.png)
 
 ## What it does
 
