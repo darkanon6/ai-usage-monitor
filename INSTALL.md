@@ -9,9 +9,17 @@ minute.
 ## Steps
 
 1. **Download** the zip from the
-   [latest release](https://github.com/darkanon6/ai-usage-monitor/releases/latest)
-   — look for `usage-monitor-vX.Y.Z.zip` under "Assets" — and unzip it. You
-   should end up with a folder containing `manifest.json`.
+   [latest release](https://github.com/darkanon6/ai-usage-monitor/releases/latest).
+   Under **Assets**, click **`usage-monitor-vX.Y.Z.zip`** — then unzip it.
+   You should end up with a folder containing `manifest.json`, an `icons/`
+   folder, and a `dist/` folder.
+
+   > ⚠️ **Don't** click "Source code (zip)" or "Source code (tar.gz)" —
+   > those links are added automatically by GitHub to every release and
+   > only contain the raw source code, not the built extension. Loading
+   > that one gives a "Could not load background script" / "Could not
+   > load manifest" error in Chrome, because the `dist/` folder the
+   > extension needs isn't in it.
 2. Open a new tab and go to `chrome://extensions`.
 3. Turn on **Developer mode** — the toggle is in the top-right corner.
 4. Click **Load unpacked**.
@@ -37,3 +45,15 @@ only way around this, and is on the roadmap (see `README.md`).
 Chrome doesn't auto-update unpacked extensions. To get a newer version,
 download the new zip, remove the old one from `chrome://extensions`
 (**Remove**), and load the new folder the same way.
+
+## Troubleshooting
+
+**"Failed to load extension" / "Could not load background script ''." /
+"Could not load manifest."** — this means the folder you selected doesn't
+have a `dist/` folder in it. The almost-certain cause is downloading
+GitHub's automatic "Source code (zip)" link instead of the actual release
+asset (see the warning in step 1 above) — its folder is named something
+like `ai-usage-monitor-0.3.0` rather than `usage-monitor-v0.3.0`. Delete
+that folder, go back to the
+[latest release](https://github.com/darkanon6/ai-usage-monitor/releases/latest),
+and download `usage-monitor-vX.Y.Z.zip` from **Assets** instead.
